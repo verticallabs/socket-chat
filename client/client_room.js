@@ -4,7 +4,7 @@ var util = require('util');
 var EventEmitter = require('events').EventEmitter;
 var _ = require('lodash');
 
-function ClientDatabase(options) {
+function ClientRoom(options) {
   this.options = options || {};
 
   this.db = multilevel.client();
@@ -15,15 +15,15 @@ function ClientDatabase(options) {
 
   return this;
 }
-util.inherits(ClientDatabase, EventEmitter); 
+util.inherits(ClientRoom, EventEmitter); 
 
-ClientDatabase.prototype._emitMessage = function _loadMessage(m) {
+ClientRoom.prototype._emitMessage = function _loadMessage(m) {
   var self = this;
   self.emit('message', m);
 }
 
 
-ClientDatabase.prototype._loadMessage = function _loadMessage(id) {
+ClientRoom.prototype._loadMessage = function _loadMessage(id) {
   var self = this;
   if (!id) return;
 
@@ -32,7 +32,7 @@ ClientDatabase.prototype._loadMessage = function _loadMessage(id) {
   })
 }
 
-ClientDatabase.prototype.init = function init() {
+ClientRoom.prototype.init = function init() {
   var self = this;
 
   self.dbSocket.pipe(self.db.createRpcStream()).pipe(self.dbSocket)
@@ -61,14 +61,14 @@ console.log(data);
   });
 }
 
-ClientDatabase.prototype.addMessage = function addMessage(m) {
+ClientRoom.prototype.addMessage = function addMessage(m) {
   this.db.put('message:' + Date.now(), m)
 }
 
-ClientDatabase.prototype.clearMessages = function addMessage(m) {
+ClientRoom.prototype.clearMessages = function addMessage(m) {
    this.db.del('messages');
 }
 
 module.exports = {
-  ClientDatabase: ClientDatabase
+  ClientRoom: ClientRoom
 };

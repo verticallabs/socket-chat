@@ -1,12 +1,12 @@
-var ClientDatabase = require("./client/db.js").ClientDatabase; 
-var db = new ClientDatabase();
+var ClientRoom = require("./client/client_room.js").ClientRoom; 
+var room = new ClientRoom();
 
 //get initial chat state
-db.on('message', function(m) {
+room.on('message', function(m) {
   appendMessage(m);
 })
 
-db.on('del', function(m) {
+room.on('del', function(m) {
   document.getElementById('messages').innerHTML = '';
 })
 
@@ -22,7 +22,7 @@ window.send = function() {
   var msgEl = document.getElementById('message')
   var obj = {name: nameEl.value, message: msgEl.value}
   msgEl.value = ''
-  db.addMessage(obj)
+  room.addMessage(obj)
 }
 
 window.onload = function() {
@@ -32,5 +32,5 @@ window.onload = function() {
 }
 
 window.clearMessages = function() {
-  db.clearMessages();
+  room.clearMessages();
 }

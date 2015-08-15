@@ -3,7 +3,7 @@ var multilevel = require('multilevel');
 var levelLiveStream = require('level-live-stream');
 var es = require('event-stream');
 
-function ServerDatabase(options) {
+function ServerRoom(options) {
   this.options = options || {};
   
   this.db = levelup(this.options.path, {valueEncoding: 'json'});
@@ -22,7 +22,7 @@ function ServerDatabase(options) {
   return this;
 }
 
-ServerDatabase.prototype.init = function init() {
+ServerRoom.prototype.init = function init() {
   var self = this;
 
   //load initial messages
@@ -32,7 +32,7 @@ ServerDatabase.prototype.init = function init() {
   });
 };
 
-ServerDatabase.prototype._handleData = function _handleData(data) {
+ServerRoom.prototype._handleData = function _handleData(data) {
   var self = this;
 
   if (data.type === 'del' && data.key === 'messages') { 
@@ -48,5 +48,5 @@ ServerDatabase.prototype._handleData = function _handleData(data) {
 }
 
 module.exports = {
-  ServerDatabase: ServerDatabase
+  ServerRoom: ServerRoom
 };

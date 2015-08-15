@@ -2,15 +2,15 @@ var http = require('http')
 var shoe = require('shoe')
 var fs = require('fs')
 var browserify = require('browserify')
-var ServerDatabase = require('./server/db').ServerDatabase;
-var db = new ServerDatabase({path: './db/chat.db'});
+var ServerRoom = require('./server/server_room').ServerRoom;
+var room = new ServerRoom({path: './db/chat.db'});
 
 var changesSocket = shoe(function(stream) {
-  db.liveDbStream.pipe(stream); 
+  room.liveDbStream.pipe(stream); 
 });
 
 var dbSocket = shoe(function(stream) {
-  stream.pipe(db.serverStream).pipe(stream);
+  stream.pipe(room.serverStream).pipe(stream);
 });
 
 var server = http.createServer(function(req, res) {
