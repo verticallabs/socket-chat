@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "browserify": "^11.0.1",
+    "debug": "^2.2.0",
     "event-stream": "^3.3.1",
     "level-live-stream": "^1.4.11",
     "leveldown": "^1.4.0",

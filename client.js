@@ -1,5 +1,5 @@
 var ClientRoom = require("./client/client_room.js").ClientRoom; 
-var room = new ClientRoom();
+var room = new ClientRoom({ path: window.location.pathname });
 
 //get initial chat state
 room.on('message', function(m) {

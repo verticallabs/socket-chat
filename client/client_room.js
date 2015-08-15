@@ -8,8 +8,8 @@ function ClientRoom(options) {
   this.options = options || {};
 
   this.db = multilevel.client();
-  this.dbSocket = shoe('/wsdb');
-  this.changesSocket = shoe('/wschanges');
+  this.dbSocket = shoe(options.path + '/db');
+  this.changesSocket = shoe(options.path + '/changes');
 
   this.init();
 
@@ -37,21 +37,7 @@ ClientRoom.prototype.init = function init() {
 
   self.dbSocket.pipe(self.db.createRpcStream()).pipe(self.dbSocket)
 
-  self.changesSocket.on('data', function _handleSocketChanges(data) {
-    var data = JSON.parse(data)
-console.log(data);
-
-    switch(data.type) {
-      case 'put':
-        if(_.contains(data.key, 'message:')) {
-          self._emitMessage(data.value);
-        }
-        break;
-      case 'del':
-        self.emit('del');
-        break;
-    }
-  });
+  self.changesSocket.on('data', self._handleSocketChanges.bind(self));
 
   self.db.get('messages', function(err, messages) {
     if (messages == null) return;
@@ -59,6 +45,22 @@ console.log(data);
     var ids = Object.keys(messages).slice(-15) //take last 15
     ids.forEach(self._loadMessage.bind(self));
   });
+}
+
+ClientRoom.prototype._handleSocketChanges = function _handleSocketChanges(data) {
+  var self = this;
+  var data = JSON.parse(data)
+
+  switch(data.type) {
+    case 'put':
+      if(_.contains(data.key, 'message:')) {
+        self._emitMessage(data.value);
+      }
+      break;
+    case 'del':
+      self.emit('del');
+      break;
+  }
 }
 
 ClientRoom.prototype.addMessage = function addMessage(m) {

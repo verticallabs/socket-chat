@@ -1,21 +1,12 @@
+var debug = require('debug')('serverRoom');
 var levelup = require('levelup');
 var multilevel = require('multilevel');
 var levelLiveStream = require('level-live-stream');
-var es = require('event-stream');
+var stream = require('stream');
 
 function ServerRoom(options) {
   this.options = options || {};
   
-  this.db = levelup(this.options.path, {valueEncoding: 'json'});
-
-  var levelStream = levelLiveStream(this.db);
-  levelStream.on('data', this._handleData.bind(this));
-  this.liveDbStream = levelStream.pipe(es.map(function(data, next) { 
-    next(null, JSON.stringify(data)) 
-  }));
-
-  this.serverStream = multilevel.server(this.db);
-
   this.messages = {};
   this.init();
   
@@ -24,6 +15,14 @@ function ServerRoom(options) {
 
 ServerRoom.prototype.init = function init() {
   var self = this;
+
+  this.db = levelup(this.options.path, {valueEncoding: 'json'});
+
+  var levelStream = levelLiveStream(this.db);
+  levelStream.on('data', this._handleData.bind(this));
+
+  this.liveDbStream = levelStream.on('data', this._handleData.bind(this));
+  this.dbStream = multilevel.server(this.db)
 
   //load initial messages
   self.db.get('messages', function(err, data) {

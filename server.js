@@ -1,21 +1,12 @@
+var debug = require('debug')('server');
 var http = require('http')
-var shoe = require('shoe')
 var fs = require('fs')
 var browserify = require('browserify')
-var ServerRoom = require('./server/server_room').ServerRoom;
-var room = new ServerRoom({path: './db/chat.db'});
-
-var changesSocket = shoe(function(stream) {
-  room.liveDbStream.pipe(stream); 
-});
-
-var dbSocket = shoe(function(stream) {
-  stream.pipe(room.serverStream).pipe(stream);
-});
+var mountRoom = require('./server/mount_room');
 
 var server = http.createServer(function(req, res) {
   switch (req.url) {
-    case '/': 
+    case '/room': 
       fs.createReadStream('./index.html').pipe(res)
       break;
     case '/client.js':
@@ -28,8 +19,7 @@ var server = http.createServer(function(req, res) {
   }
 });
 
-changesSocket.install(server, '/wschanges');
-dbSocket.install(server, '/wsdb');
+mountRoom(server, '/room');
 
 server.listen(8000, function() {
   console.log('listening...')
