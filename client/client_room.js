@@ -1,23 +1,34 @@
 var multilevel = require('multilevel');
-var shoe = require('shoe');
 var util = require('util');
 var EventEmitter = require('events').EventEmitter;
 var _ = require('lodash');
+var levelLiveStream = require('level-live-stream');
+var shoe = require('shoe');
 
 function ClientRoom(options) {
-  this.options = options || {};
+  var self = this;
+  self.options = options || {};
 
-  this.db = multilevel.client();
-  this.dbSocket = shoe(options.path + '/db');
-  this.changesSocket = shoe(options.path + '/changes');
+  self.db = multilevel.client();
 
-  this.init();
+  self.dbSocket = shoe(options.path + '/ws');
+  self.dbSocket.pipe(self.db.createRpcStream()).pipe(self.dbSocket)
 
-  return this;
+  var liveStream = levelLiveStream(self.db);
+  liveStream.on('data', self._handleSocketChanges.bind(self));
+
+  self.db.get('messages', function(err, messages) {
+    if (messages == null) return;
+
+    var ids = Object.keys(messages).slice(-15) //take last 15
+    ids.forEach(self._loadMessage.bind(self));
+  });
+
+  return self;
 }
 util.inherits(ClientRoom, EventEmitter); 
 
-ClientRoom.prototype._emitMessage = function _loadMessage(m) {
+ClientRoom.prototype._emitMessage = function _emitMessage(m) {
   var self = this;
   self.emit('message', m);
 }
@@ -31,14 +42,12 @@ ClientRoom.prototype._loadMessage = function _loadMessage(id) {
     self._emitMessage(message);
   })
 }
-
+/*
 ClientRoom.prototype.init = function init() {
   var self = this;
 
   self.dbSocket.pipe(self.db.createRpcStream()).pipe(self.dbSocket)
-
   self.changesSocket.on('data', self._handleSocketChanges.bind(self));
-
   self.db.get('messages', function(err, messages) {
     if (messages == null) return;
 
@@ -46,10 +55,11 @@ ClientRoom.prototype.init = function init() {
     ids.forEach(self._loadMessage.bind(self));
   });
 }
+*/
 
 ClientRoom.prototype._handleSocketChanges = function _handleSocketChanges(data) {
   var self = this;
-  var data = JSON.parse(data)
+  //var data = JSON.parse(data)
 
   switch(data.type) {
     case 'put':
@@ -62,6 +72,7 @@ ClientRoom.prototype._handleSocketChanges = function _handleSocketChanges(data) 
       break;
   }
 }
+
 
 ClientRoom.prototype.addMessage = function addMessage(m) {
   this.db.put('message:' + Date.now(), m)
