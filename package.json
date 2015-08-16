@@ -1,22 +1,13 @@
 {
-  "name": "spheres",
+  "name": "socket-chat-example",
   "version": "0.0.1",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
+  "description": "my first socket.io app",
   "dependencies": {
     "browserify": "^11.0.1",
     "debug": "^2.2.0",
-    "event-stream": "^3.3.1",
-    "level-live-stream": "^1.4.11",
-    "leveldown": "^1.4.0",
-    "levelup": "^1.2.1",
+    "express": "^4.10.2",
     "lodash": "^3.10.1",
-    "multilevel": "^6.1.0",
-    "shoe": "0.0.15"
+    "redis": "^0.12.1",
+    "socket.io": "^1.3.6"
   }
 }

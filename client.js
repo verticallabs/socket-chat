@@ -1,36 +1,33 @@
-var ClientRoom = require("./client/client_room.js").ClientRoom; 
-var room = new ClientRoom({ path: window.location.pathname });
+var _ = require('lodash');
+var messages = require('./server/socket/messages');
 
-//get initial chat state
-room.on('message', function(m) {
-  appendMessage(m);
-})
+var socket = io();
 
-room.on('del', function(m) {
-  document.getElementById('messages').innerHTML = '';
-})
+$(function() {
+  $('button')
+    .on('click', function() {
+      socket.emit('?' + messages.NEW_MESSAGE, {
+        body: $('#m').val(),
+        roomId: 'lobby'
+      });
 
-function appendMessage(msg) {
-  var p = document.createElement('p')
-  var text = document.createTextNode(msg.name + ': ' + msg.message)
-  p.appendChild(text)
-  document.getElementById('messages').appendChild(p)
-}
+      $('#m').val('');
+    });
+});
 
-window.send = function() {
-  var nameEl = document.getElementById('name')
-  var msgEl = document.getElementById('message')
-  var obj = {name: nameEl.value, message: msgEl.value}
-  msgEl.value = ''
-  room.addMessage(obj)
-}
+socket.on('!' + messages.ROOM_JOIN, function() {
+  $('ul').empty();
+});
 
-window.onload = function() {
-  var nameEl = document.getElementById('name')
-  var id = Math.random().toString().substr(2,3)
-  nameEl.value += id
-}
+socket.on('!' + messages.NEW_MESSAGE, function(m) {
+  $('#messages')
+    .append($('<li>')
+    .text(m.body));
+});
 
-window.clearMessages = function() {
-  room.clearMessages();
-}
+socket.on('connect', function() {
+  socket.emit('?' + messages.ROOM_JOIN, { id: 'lobby' });
+});
+
+socket.on('reconnect', function() {
+});
